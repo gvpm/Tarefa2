@@ -8,10 +8,14 @@ package servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -30,58 +34,123 @@ public class Somatorio extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         Enumeration<String> parameterNames = request.getParameterNames();
-        int inicio=0,fim=0;
-        
-        boolean isInicioSet=false,isFimSet=false;
-        
-        while(parameterNames.hasMoreElements()){
+        int inicio = 0, fim = 0;
+
+        boolean isInicioSet = false, isFimSet = false;
+
+        while (parameterNames.hasMoreElements()) {
             String current = parameterNames.nextElement();
-            if(current.compareTo("inicio")==0){
+            if (current.compareTo("inicio") == 0) {
                 inicio = Integer.parseInt(request.getParameter(current));
                 isInicioSet = true;
-                
+
             }
-            if(current.compareTo("fim")==0){
+            if (current.compareTo("fim") == 0) {
                 fim = Integer.parseInt(request.getParameter(current));
                 isFimSet = true;
-                
+
             }
-            
+
         }
-        
-        
-        
-        if(isFimSet&isInicioSet==true){
-        
-        response.setContentType("text/html;charset=UTF-8");
-        
-        int somatorio =0;
-        int contador = inicio;
-        
-        while(contador<=fim){
-            somatorio+=contador;
-            contador++;
-            
-            
-        }
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Somatorio</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Somatorio de " + inicio +" a "+fim+" = "+somatorio+ "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-        }else{
-            
+
+        if (isFimSet & isInicioSet == true) {
+
+            //--------------------TOTAL USES
+            int totalUses;
+            int currentTotalUses = 1;
+            ServletContext servletContext = request.getServletContext();
+            Object attribute = servletContext.getAttribute("totalUses");
+            if (attribute != null) {
+                totalUses = (int) attribute;
+                currentTotalUses = totalUses;
+                totalUses++;
+                servletContext.setAttribute("totalUses", totalUses);
+
+            } else {
+                servletContext.setAttribute("totalUses", 1);
+            }
+
+            //--------------------Session Uses
+            int sessionUses;
+            int currentSessionCounter = 1;
+            HttpSession session = request.getSession();
+            Object sessionCounter = session.getAttribute("sessionCounter");
+            if (sessionCounter != null) {
+                sessionUses = (int) sessionCounter;
+                currentSessionCounter = sessionUses;
+                sessionUses++;
+                session.setAttribute("sessionCounter", sessionUses);
+
+            } else {
+                session.setAttribute("sessionCounter", 1);
+
+            }
+
+            boolean cookieFound = false;
+            int cookieUses;
+            int currentCookieCounter = 1;
+            Cookie[] cookies = request.getCookies();
+
+            if (cookies != null) {
+                for (int i = 0; i < cookies.length; i++) {
+                    Cookie cookie1 = cookies[i];
+                    if (cookie1.getName().equals("cookieCounter")) {
+
+                        String sIntCounter = cookie1.getValue();
+                        cookieUses = Integer.parseInt(sIntCounter);
+                        currentCookieCounter = cookieUses;
+                        cookieUses++;
+                        sIntCounter = "" + cookieUses;
+                        cookie1.setValue(sIntCounter);
+                        response.addCookie(cookie1);
+                        cookieFound = true;
+                    }
+
+                }
+                if (!cookieFound) {//caso onde tem cookie no browser mas nenhum do meu servlet
+
+                    String s = "" + 1;
+                    response.addCookie(new Cookie("cookieCounter", s));
+                    currentCookieCounter = 1;
+
+                }
+            } else {
+                String s = "" + 1;
+                response.addCookie(new Cookie("cookieCounter", s));
+                //currentCookieCounter = 1;
+            }
+
+            response.setContentType("text/html;charset=UTF-8");
+
+            int somatorio = 0;
+            int contador = inicio;
+
+            while (contador <= fim) {
+                somatorio += contador;
+                contador++;
+
+            }
+            try (PrintWriter out = response.getWriter()) {
+                /* TODO output your page here. You may use following sample code. */
+                out.println("<!DOCTYPE html>");
+                out.println("<html>");
+                out.println("<head>");
+                out.println("<title>Somatorio</title>");
+                out.println("</head>");
+                out.println("<body>");        
+                out.println("<h1>Somatorio de " + inicio + " a " + fim + " = " + somatorio + "</h1>");
+                out.println("<h1>Você usou " + currentSessionCounter + " vezes nessa sessão</h1>");
+                out.println("<h1>Você usou " + currentCookieCounter + " vezes nesse browser</h1>");
+                out.println("<h1>O servlet foi usado " + currentTotalUses + " vezes no total</h1>");
+                out.println("</body>");
+                out.println("</html>");
+            }
+        } else {
+
             //goto form page
-            
+            response.sendRedirect("form.html");
         }
     }
 
