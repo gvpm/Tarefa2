@@ -8,7 +8,6 @@ package servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -34,12 +33,12 @@ public class Somatorio extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+//Get inicio e fim parameters
         Enumeration<String> parameterNames = request.getParameterNames();
         int inicio = 0, fim = 0;
 
         boolean isInicioSet = false, isFimSet = false;
-
+//checks if all paremeters are all right
         while (parameterNames.hasMoreElements()) {
             String current = parameterNames.nextElement();
             if (current.compareTo("inicio") == 0) {
@@ -54,10 +53,10 @@ public class Somatorio extends HttpServlet {
             }
 
         }
-
+//case when both parameters are set
         if (isFimSet & isInicioSet == true) {
 
-            //--------------------TOTAL USES
+//-----------------------------Total Uses -----------------------
             int totalUses;
             int currentTotalUses = 1;
             ServletContext servletContext = request.getServletContext();
@@ -71,8 +70,9 @@ public class Somatorio extends HttpServlet {
             } else {
                 servletContext.setAttribute("totalUses", 1);
             }
+//-----------------------------Total Uses -----------------------
 
-            //--------------------Session Uses
+//-----------------------------Session Uses End -----------------------
             int sessionUses;
             int currentSessionCounter = 1;
             HttpSession session = request.getSession();
@@ -87,7 +87,9 @@ public class Somatorio extends HttpServlet {
                 session.setAttribute("sessionCounter", 1);
 
             }
+//-----------------------------Session Uses End -----------------------     
 
+//-----------------------------Cookie Uses -----------------------
             boolean cookieFound = false;
             int cookieUses;
             int currentCookieCounter = 1;
@@ -121,17 +123,20 @@ public class Somatorio extends HttpServlet {
                 response.addCookie(new Cookie("cookieCounter", s));
                 //currentCookieCounter = 1;
             }
+//-----------------------------Cookie Uses End -----------------------            
 
             response.setContentType("text/html;charset=UTF-8");
-
+            
+//-----------------------------Somatorio -----------------------               
             int somatorio = 0;
             int contador = inicio;
 
             while (contador <= fim) {
                 somatorio += contador;
                 contador++;
+//-----------------------------Somatorio End -----------------------                
 
-            }
+            }//does all the printing
             try (PrintWriter out = response.getWriter()) {
                 /* TODO output your page here. You may use following sample code. */
                 out.println("<!DOCTYPE html>");
@@ -139,7 +144,7 @@ public class Somatorio extends HttpServlet {
                 out.println("<head>");
                 out.println("<title>Somatorio</title>");
                 out.println("</head>");
-                out.println("<body>");        
+                out.println("<body>");
                 out.println("<h1>Somatorio de " + inicio + " a " + fim + " = " + somatorio + "</h1>");
                 out.println("<h1>Você usou " + currentSessionCounter + " vezes nessa sessão</h1>");
                 out.println("<h1>Você usou " + currentCookieCounter + " vezes nesse browser</h1>");
@@ -147,10 +152,10 @@ public class Somatorio extends HttpServlet {
                 out.println("</body>");
                 out.println("</html>");
             }
-        } else {
+        } else {//case when parameters are not ser, goes to erro page, that contains a form
 
             //goto form page
-            response.sendRedirect("form.html");
+            response.sendRedirect("erro.html");
         }
     }
 
